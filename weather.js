@@ -1,4 +1,4 @@
-export class weather{
+class weather{
     constructor(location,temperature,humidity,pressure) {
         this.location = location;
         this.temperature = temperature;
@@ -6,3 +6,4 @@ export class weather{
         this.pressure = pressure;
     }
 }
+module.exports = weather;
