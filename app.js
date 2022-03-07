@@ -21,6 +21,13 @@ app.get('/', (req, res) => {
   res.send(`${JSON.stringify(data[0])}`);
 })
 
+app.post('/', (req, res) => {
+  req.on('data', (chunk) => {
+    console.log(chunk.toString('utf8'));
+  });
+
+  res.send("received post\n");
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
