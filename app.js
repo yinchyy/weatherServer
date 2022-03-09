@@ -39,6 +39,17 @@ function appendOrModifyObjectInArray(dataArr, obj) {
     data.push(obj);
   }
 }
+function deleteObjectIfExists(dataArr, obj) {
+  const elemIndex = dataArr.findIndex((e) => e.location === obj.location);
+  if (elemIndex != -1) {
+    dataArr.splice(elemIndex, 1);
+    console.log("deleted");
+    writeJSONData(JSONStorageFile);
+  }
+  else {
+    console.log("requested object doesn't exist");
+  }
+}
 app.get('/', (req, res) => {
   res.send(data);
 });
@@ -49,6 +60,13 @@ app.post('/', (req, res) => {
     writeJSONData(JSONStorageFile);
   });
   return res.send("received post\n");
+});
+app.delete('/', (req, res) => {
+  req.on('data', (chunk) => {
+    console.log(chunk.toString('utf8'));
+    deleteObjectIfExists(data, JSON.parse(chunk.toString('utf8')));
+  });
+  return res.send("received delete\n");
 });
 
 app.listen(port, () => {
