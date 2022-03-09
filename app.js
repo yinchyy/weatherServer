@@ -3,32 +3,40 @@ const express = require('express');
 const app = express();
 const port = 8081;
 const weather = require("./weather.js");
-let data = new Array();
+const JSONStorageFile = "./data.json";
+let data = Array.from(getJSONData(JSONStorageFile));
 
 data.push(new weather("Warsaw", 25.6, 35, 1000));
 data.push(new weather("Poznan", 25.6, 35, 1000));
-console.log(JSON.stringify(data[0]));
-app.get('/', (req, res) => {
+
+writeJSONData(JSONStorageFile);
+
+function getJSONData(file) {
   try {
-    fs.readFileSync("data.json");
+    return fs.readFileSync(file);
   }
   catch (err) {
     if (err.code === 'ENOENT') {
-      console.log("file not found");
-
-      fs.appendFileSync("data.json", "");
+      console.log(`file in location: "${file}" not found, creating...`); 
+      fs.appendFileSync(file, "");
     }
-  }
+  }  
+}
+function writeJSONData(file) {
+  fs.writeFileSync(file, JSON.stringify(data));
+}
+app.get('/', (req, res) => {
   res.send(data);
 });
-  app.post('/', (req, res) => {
-    req.on('data', (chunk) => {
-      console.log(chunk.toString('utf8'));
-      data.push(JSON.parse(chunk.toString('utf8')));
-    });
-
-    return res.send("received post\n");
+app.post('/', (req, res) => {
+  req.on('data', (chunk) => {
+    console.log(chunk.toString('utf8'));
+    data.push(JSON.parse(chunk.toString('utf8')));
+    writeJSONData(JSONStorageFile);
   });
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
+  return res.send("received post\n");
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
