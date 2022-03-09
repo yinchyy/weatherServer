@@ -8,8 +8,8 @@ const JSONStorageFile = "./data.json";
 const data = JSON.parse(getJSONData(JSONStorageFile).toString('utf-8'));
 
 
-data.push(new weather("Warsaw", 25.6, 35, 1000));
-data.push(new weather("Poznan", 25.6, 35, 1000));
+appendOrModifyObjectInArray(data,new weather("Warsaw", 25.6, 35, 1000));
+appendOrModifyObjectInArray(data,new weather("Poznan", 25.6, 35, 1000));
 
 writeJSONData(JSONStorageFile);
 
@@ -30,10 +30,9 @@ function writeJSONData(file) {
 function appendOrModifyObjectInArray(dataArr, obj) {
   const elemIndex = dataArr.findIndex((e) => e.location === obj.location);
   if (elemIndex != -1) {
-    for (let value in dataArr[elemIndex].keys) {
-      dataArr[elemIndex].value = obj.value;
+    for (let key of Object.keys(dataArr[elemIndex])) {
+      dataArr[elemIndex][key] = obj[key];
     }
-    //:TODO fix value does not change
     writeJSONData(JSONStorageFile);
   }
   else {
