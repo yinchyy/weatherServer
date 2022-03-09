@@ -3,8 +3,10 @@ const express = require('express');
 const app = express();
 const port = 8081;
 const weather = require("./weather.js");
+const { json } = require('express/lib/response');
 const JSONStorageFile = "./data.json";
-let data = Array.from(getJSONData(JSONStorageFile));
+const data = JSON.parse(getJSONData(JSONStorageFile).toString('utf-8'));
+
 
 data.push(new weather("Warsaw", 25.6, 35, 1000));
 data.push(new weather("Poznan", 25.6, 35, 1000));
@@ -18,12 +20,25 @@ function getJSONData(file) {
   catch (err) {
     if (err.code === 'ENOENT') {
       console.log(`file in location: "${file}" not found, creating...`); 
-      fs.appendFileSync(file, "");
+      fs.appendFileSync(file, "[]");
     }
   }  
 }
 function writeJSONData(file) {
   fs.writeFileSync(file, JSON.stringify(data));
+}
+function appendOrModifyObjectInArray(dataArr, obj) {
+  const elemIndex = dataArr.findIndex((e) => e.location === obj.location);
+  if (elemIndex != -1) {
+    for (let value in dataArr[elemIndex].keys) {
+      dataArr[elemIndex].value = obj.value;
+    }
+    //:TODO fix value does not change
+    writeJSONData(JSONStorageFile);
+  }
+  else {
+    data.push(obj);
+  }
 }
 app.get('/', (req, res) => {
   res.send(data);
@@ -31,7 +46,7 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
   req.on('data', (chunk) => {
     console.log(chunk.toString('utf8'));
-    data.push(JSON.parse(chunk.toString('utf8')));
+    appendOrModifyObjectInArray(data,JSON.parse(chunk.toString('utf8')));
     writeJSONData(JSONStorageFile);
   });
   return res.send("received post\n");
