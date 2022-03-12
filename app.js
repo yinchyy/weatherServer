@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 appendOrModifyObjectInArray(data,new weather("Warsaw", 25.6, 35, 1000));
 appendOrModifyObjectInArray(data,new weather("Poznan", 25.6, 35, 1000));
 
-writeJSONData(JSONStorageFile);
+writeJSONData(data,JSONStorageFile);
 
 function getJSONData(file) {
   try {
@@ -24,11 +24,13 @@ function getJSONData(file) {
     if (err.code === 'ENOENT') {
       console.log(`file in location: "${file}" not found, creating...`); 
       fs.appendFileSync(file, "[]");
+      return fs.readFileSync(file);
     }
   }  
 }
-function writeJSONData(file) {
-  fs.writeFileSync(file, JSON.stringify(data));
+function writeJSONData(Arr,file) {
+  fs.writeFileSync(file, JSON.stringify(Arr));
+  return fs.readFileSync(file);
 }
 function appendOrModifyObjectInArray(dataArr, obj) {
   const elemIndex = dataArr.findIndex((e) => e.location === obj.location);
@@ -36,18 +38,18 @@ function appendOrModifyObjectInArray(dataArr, obj) {
     for (let key of Object.keys(dataArr[elemIndex])) {
       dataArr[elemIndex][key] = obj[key];
     }
-    writeJSONData(JSONStorageFile);
   }
   else {
     data.push(obj);
   }
+  writeJSONData(data,JSONStorageFile);
 }
 function deleteObjectIfExists(dataArr, obj) {
   const elemIndex = dataArr.findIndex((e) => e.location === obj.location);
   if (elemIndex != -1) {
     dataArr.splice(elemIndex, 1);
     console.log("deleted");
-    writeJSONData(JSONStorageFile);
+    writeJSONData(data,JSONStorageFile);
   }
   else {
     console.log("requested object doesn't exist");
@@ -73,7 +75,7 @@ app.post('/', (req, res) => {
     }
     else { 
       appendOrModifyObjectInArray(data,req.body);
-      writeJSONData(JSONStorageFile);
+      writeJSONData(data,JSONStorageFile);
     }
   return res.send(`received post request of ${req.body.location}\n`);
 });
@@ -86,3 +88,9 @@ app.delete('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+
+module.exports = {
+  getJSONData,
+  writeJSONData,
+  isObjectIntegral
+};
